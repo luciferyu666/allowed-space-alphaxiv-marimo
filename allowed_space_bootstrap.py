@@ -276,6 +276,36 @@ def _(mo):
         start=35, stop=111, step=2, value=61, label="Parameter scan resolution"
     )
 
+    return (
+        analyticity_control,
+        crossing_control,
+        grid_resolution_control,
+        level_control,
+        level_truncation_control,
+        q_control,
+        r_control,
+        regge_control,
+        ultrasoftness_control,
+        unitarity_control,
+        w_control,
+    )
+
+
+@app.cell
+def _(
+    analyticity_control,
+    crossing_control,
+    grid_resolution_control,
+    level_control,
+    level_truncation_control,
+    mo,
+    q_control,
+    r_control,
+    regge_control,
+    ultrasoftness_control,
+    unitarity_control,
+    w_control,
+):
     mo.vstack(
         [
             mo.md("## Assumption controls"),
@@ -300,19 +330,7 @@ def _(mo):
             ),
         ]
     )
-    return (
-        analyticity_control,
-        crossing_control,
-        grid_resolution_control,
-        level_control,
-        level_truncation_control,
-        q_control,
-        r_control,
-        regge_control,
-        ultrasoftness_control,
-        unitarity_control,
-        w_control,
-    )
+    return
 
 
 @app.cell
@@ -561,7 +579,7 @@ def _(
 
 
 @app.cell
-def _(assumption_states, format_percent, metrics, mo):
+def _(assumption_states, format_percent, metrics):
     missing_background = [
         key for key in ("unitarity", "crossing", "analyticity") if not assumption_states[key]
     ]
@@ -602,6 +620,11 @@ def _(assumption_states, format_percent, metrics, mo):
         "claim."
     )
 
+    return claim_draft, evidence_note, report_appendix, risk_critique
+
+
+@app.cell
+def _(claim_draft, evidence_note, mo, report_appendix, risk_critique):
     mo.md(
         f"""
         ## Research-platform handoff
