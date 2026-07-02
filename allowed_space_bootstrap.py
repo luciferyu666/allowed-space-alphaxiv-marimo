@@ -276,6 +276,37 @@ def _(mo):
         start=35, stop=111, step=2, value=61, label="Parameter scan resolution"
     )
 
+    mo.output.replace(
+        mo.vstack(
+            [
+                mo.md("## Assumption controls"),
+                mo.md(
+                    "Toggle the background axioms and stronger premises. Move "
+                    "`q/r/w` away from the Veneziano-like point `(1, 0, 0)` to "
+                    "watch the allowed space reopen."
+                ),
+                mo.hstack(
+                    [unitarity_control, crossing_control, analyticity_control],
+                    justify="start",
+                    gap=1,
+                ),
+                mo.hstack(
+                    [
+                        regge_control,
+                        level_truncation_control,
+                        ultrasoftness_control,
+                    ],
+                    justify="start",
+                    gap=1,
+                ),
+                mo.hstack([q_control, r_control, w_control], justify="start", gap=1),
+                mo.hstack(
+                    [level_control, grid_resolution_control], justify="start", gap=1
+                ),
+            ]
+        )
+    )
+
     return (
         analyticity_control,
         crossing_control,
@@ -289,48 +320,6 @@ def _(mo):
         unitarity_control,
         w_control,
     )
-
-
-@app.cell
-def _(
-    analyticity_control,
-    crossing_control,
-    grid_resolution_control,
-    level_control,
-    level_truncation_control,
-    mo,
-    q_control,
-    r_control,
-    regge_control,
-    ultrasoftness_control,
-    unitarity_control,
-    w_control,
-):
-    mo.vstack(
-        [
-            mo.md("## Assumption controls"),
-            mo.md(
-                "Toggle the background axioms and stronger premises. Move "
-                "`q/r/w` away from the Veneziano-like point `(1, 0, 0)` to "
-                "watch the allowed space reopen."
-            ),
-            mo.hstack(
-                [unitarity_control, crossing_control, analyticity_control],
-                justify="start",
-                gap=1,
-            ),
-            mo.hstack(
-                [regge_control, level_truncation_control, ultrasoftness_control],
-                justify="start",
-                gap=1,
-            ),
-            mo.hstack([q_control, r_control, w_control], justify="start", gap=1),
-            mo.hstack(
-                [level_control, grid_resolution_control], justify="start", gap=1
-            ),
-        ]
-    )
-    return
 
 
 @app.cell
