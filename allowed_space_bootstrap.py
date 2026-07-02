@@ -252,108 +252,90 @@ def _(np):
 
 @app.cell
 def _(mo):
-    unitarity_control = mo.ui.checkbox(value=True, label="Unitarity")
-    crossing_control = mo.ui.checkbox(value=True, label="Crossing symmetry")
-    analyticity_control = mo.ui.checkbox(value=True, label="Analyticity")
-    regge_control = mo.ui.checkbox(value=True, label="Regge control")
-    level_truncation_control = mo.ui.checkbox(
-        value=True, label="Level truncation"
-    )
-    ultrasoftness_control = mo.ui.checkbox(value=False, label="Ultrasoftness")
-    q_control = mo.ui.slider(
-        start=0.55, stop=1.45, step=0.01, value=1.0, label="q deformation"
-    )
-    r_control = mo.ui.slider(
-        start=-0.45, stop=0.45, step=0.01, value=0.0, label="r deformation"
-    )
-    w_control = mo.ui.slider(
-        start=-0.45, stop=0.45, step=0.01, value=0.0, label="w deformation"
-    )
-    level_control = mo.ui.slider(
-        start=3, stop=16, step=1, value=7, label="Residue level n"
-    )
-    grid_resolution_control = mo.ui.slider(
-        start=35, stop=111, step=2, value=61, label="Parameter scan resolution"
-    )
+    assumption_controls = mo.md(
+        """
+        ## Assumption controls
 
-    mo.output.replace(
-        mo.vstack(
-            [
-                mo.md("## Assumption controls"),
-                mo.md(
-                    "Toggle the background axioms and stronger premises. Move "
-                    "`q/r/w` away from the Veneziano-like point `(1, 0, 0)` to "
-                    "watch the allowed space reopen."
-                ),
-                mo.hstack(
-                    [unitarity_control, crossing_control, analyticity_control],
-                    justify="start",
-                    gap=1,
-                ),
-                mo.hstack(
-                    [
-                        regge_control,
-                        level_truncation_control,
-                        ultrasoftness_control,
-                    ],
-                    justify="start",
-                    gap=1,
-                ),
-                mo.hstack([q_control, r_control, w_control], justify="start", gap=1),
-                mo.hstack(
-                    [level_control, grid_resolution_control], justify="start", gap=1
-                ),
-            ]
+        Toggle the background axioms and stronger premises. Move `q/r/w`
+        away from the Veneziano-like point `(1, 0, 0)` to watch the allowed
+        space reopen.
+
+        **Background axioms:** {unitarity} {crossing} {analyticity}
+
+        **Stronger premises:** {regge} {level_truncation} {ultrasoftness}
+
+        **Deformation point:** q {q} r {r} w {w}
+
+        **Resolution controls:** residue level {level} parameter scan {resolution}
+        """
+    ).batch(
+        unitarity=mo.ui.checkbox(value=True, label="Unitarity"),
+        crossing=mo.ui.checkbox(value=True, label="Crossing symmetry"),
+        analyticity=mo.ui.checkbox(value=True, label="Analyticity"),
+        regge=mo.ui.checkbox(value=True, label="Regge control"),
+        level_truncation=mo.ui.checkbox(value=True, label="Level truncation"),
+        ultrasoftness=mo.ui.checkbox(value=False, label="Ultrasoftness"),
+        q=mo.ui.slider(
+            start=0.55, stop=1.45, step=0.01, value=1.0, label="q deformation"
+        ),
+        r=mo.ui.slider(
+            start=-0.45, stop=0.45, step=0.01, value=0.0, label="r deformation"
+        ),
+        w=mo.ui.slider(
+            start=-0.45, stop=0.45, step=0.01, value=0.0, label="w deformation"
+        ),
+        level=mo.ui.slider(
+            start=3, stop=16, step=1, value=7, label="Residue level n"
+        ),
+        resolution=mo.ui.slider(
+            start=35,
+            stop=111,
+            step=2,
+            value=61,
+            label="Parameter scan resolution",
         )
     )
 
-    return (
-        analyticity_control,
-        crossing_control,
-        grid_resolution_control,
-        level_control,
-        level_truncation_control,
-        q_control,
-        r_control,
-        regge_control,
-        ultrasoftness_control,
-        unitarity_control,
-        w_control,
-    )
+    assumption_controls
+    return (assumption_controls,)
 
 
 @app.cell
-def _(
-    analyticity_control,
-    compute_metrics,
-    crossing_control,
-    level_truncation_control,
-    q_control,
-    r_control,
-    regge_control,
-    ultrasoftness_control,
-    unitarity_control,
-    w_control,
-):
+def _(assumption_controls, compute_metrics):
+    control_values = assumption_controls.value
+    q_value = float(control_values["q"])
+    r_value = float(control_values["r"])
+    w_value = float(control_values["w"])
+    level_value = int(control_values["level"])
+    grid_resolution = int(control_values["resolution"])
     assumption_states = {
-        "unitarity": bool(unitarity_control.value),
-        "crossing": bool(crossing_control.value),
-        "analyticity": bool(analyticity_control.value),
-        "regge_control": bool(regge_control.value),
-        "level_truncation": bool(level_truncation_control.value),
-        "ultrasoftness": bool(ultrasoftness_control.value),
+        "unitarity": bool(control_values["unitarity"]),
+        "crossing": bool(control_values["crossing"]),
+        "analyticity": bool(control_values["analyticity"]),
+        "regge_control": bool(control_values["regge"]),
+        "level_truncation": bool(control_values["level_truncation"]),
+        "ultrasoftness": bool(control_values["ultrasoftness"]),
     }
     metrics = compute_metrics(
         assumption_states,
-        float(q_control.value),
-        float(r_control.value),
-        float(w_control.value),
+        q_value,
+        r_value,
+        w_value,
     )
-    return assumption_states, metrics
+    return (
+        assumption_states,
+        control_values,
+        grid_resolution,
+        level_value,
+        metrics,
+        q_value,
+        r_value,
+        w_value,
+    )
 
 
 @app.cell
-def _(format_percent, metrics, mo, q_control, r_control, w_control):
+def _(format_percent, metrics, mo, q_value, r_value, w_value):
     mo.md(
         f"""
         ## Current scenario
@@ -367,8 +349,8 @@ def _(format_percent, metrics, mo, q_control, r_control, w_control):
         | Allowed volume | {format_percent(metrics["allowed_volume"])} | How much deformation space remains open |
         | Three-parameter freedom | {format_percent(metrics["three_parameter_freedom"])} | How visible the broader `q/r/w` family remains |
 
-        Current deformation point: `q={float(q_control.value):.2f}`,
-        `r={float(r_control.value):.2f}`, `w={float(w_control.value):.2f}`.
+        Current deformation point: `q={q_value:.2f}`,
+        `r={r_value:.2f}`, `w={w_value:.2f}`.
         """
     )
     return
@@ -426,20 +408,20 @@ def _(metrics, plt):
 @app.cell
 def _(
     assumption_states,
-    grid_resolution_control,
+    grid_resolution,
     mo,
     run_parameter_scan,
-    w_control,
+    w_value,
 ):
     scan_result = run_parameter_scan(
-        int(grid_resolution_control.value), float(w_control.value), assumption_states
+        grid_resolution, w_value, assumption_states
     )
     mo.md(
         f"""
         ## Parameter scan
 
         The heatmap below scans a simplified `q/r` deformation plane at fixed
-        `w={float(w_control.value):.2f}`. It is intentionally a toy model:
+        `w={w_value:.2f}`. It is intentionally a toy model:
         the goal is to make the paper's qualitative logic inspectable, not to
         claim a full physics reproduction.
 
@@ -454,7 +436,7 @@ def _(
 
 
 @app.cell
-def _(metrics, plt, q_control, r_control, scan_result):
+def _(metrics, plt, q_value, r_value, scan_result):
     q_values = scan_result["q_values"]
     r_values = scan_result["r_values"]
     rigidity_grid = scan_result["rigidity"]
@@ -471,8 +453,8 @@ def _(metrics, plt, q_control, r_control, scan_result):
         vmax=1,
     )
     ax_heat.scatter(
-        [float(q_control.value)],
-        [float(r_control.value)],
+        [q_value],
+        [r_value],
         marker="*",
         s=170,
         color="#f0b429",
@@ -495,8 +477,8 @@ def _(metrics, plt, q_control, r_control, scan_result):
     )
     ax_risk.clabel(risk_contours, inline=True, fontsize=8)
     ax_risk.scatter(
-        [float(q_control.value)],
-        [float(r_control.value)],
+        [q_value],
+        [r_value],
         marker="*",
         s=170,
         color="#f0b429",
@@ -516,23 +498,23 @@ def _(metrics, plt, q_control, r_control, scan_result):
 
 @app.cell
 def _(
-    level_control,
+    level_value,
     np,
     plt,
-    q_control,
-    r_control,
+    q_value,
+    r_value,
     synthetic_residue,
-    w_control,
+    w_value,
 ):
-    level = int(level_control.value)
+    level = level_value
     t_values = np.linspace(-level - 1.2, 1.5, 600)
     veneziano_residue = synthetic_residue(t_values, level, 1.0, 0.0, 0.0)
     deformed_residue = synthetic_residue(
         t_values,
         level,
-        float(q_control.value),
-        float(r_control.value),
-        float(w_control.value),
+        q_value,
+        r_value,
+        w_value,
     )
 
     fig_residue, ax_residue = plt.subplots(figsize=(9, 4.5))
